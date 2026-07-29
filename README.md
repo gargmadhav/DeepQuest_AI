@@ -26,31 +26,6 @@ Hermes is an end-to-end **Autonomous AI Agent Platform** designed for deep techn
 
 ---
 
-## 🏗️ Architecture & Data Flow
-
-```mermaid
-graph TD
-    User([User / Browser UI]) <-->|WebSocket / REST| FastAPI[FastAPI Backend Server]
-    FastAPI <-->|Task Records & History| DB[(SQLite Backend DB)]
-    FastAPI <--> Orchestrator[LangGraph Agent Orchestrator]
-
-    subgraph LangGraph State Machine
-        Orchestrator --> MemoryNode[Memory Node]
-        MemoryNode --> PlannerNode[Planner Node]
-        PlannerNode --> ExecutorNode[Executor Node]
-        ExecutorNode --> ReflectionNode[Reflection Node]
-        ReflectionNode -->|Approved| IndexingNode[Indexing Node]
-        ReflectionNode -->|Needs Correction| CorrectionNode[Correction Node]
-        CorrectionNode --> IndexingNode
-    end
-
-    ExecutorNode --> Tools[10+ Tool Suite]
-    Tools --> Groq[Groq LPU LLaMA Models]
-    ExecutorNode --> Reports[(reports/ folder)]
-```
-
----
-
 ## 📁 Repository Structure
 
 ```text
