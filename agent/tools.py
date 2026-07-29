@@ -25,9 +25,9 @@ def load_env():
 load_env()
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 
-# Default models
-FAST_MODEL = "llama-3.1-8b-instant"
-POWERFUL_MODEL = "llama-3.3-70b-versatile"
+# LLM Models loaded dynamically from environment
+FAST_MODEL = os.environ.get("FAST_MODEL", "llama-3.1-8b-instant")
+POWERFUL_MODEL = os.environ.get("POWERFUL_MODEL", "llama-3.3-70b-versatile")
 
 def get_groq_client():
     global GROQ_API_KEY

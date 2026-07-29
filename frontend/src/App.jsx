@@ -16,8 +16,19 @@ import {
   Trash2
 } from 'lucide-react';
 
-const API_URL = 'http://localhost:8000';
-const WS_URL = 'ws://localhost:8000/ws/chat';
+const getApiUrl = () => {
+  if (import.meta.env.VITE_API_BASE_URL) return import.meta.env.VITE_API_BASE_URL;
+  return window.location.origin;
+};
+
+const getWsUrl = () => {
+  if (import.meta.env.VITE_WS_BASE_URL) return import.meta.env.VITE_WS_BASE_URL;
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${protocol}//${window.location.host}/ws/chat`;
+};
+
+const API_URL = getApiUrl();
+const WS_URL = getWsUrl();
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(true);

@@ -13,10 +13,13 @@ from agent.orchestrator import AgentOrchestrator
 
 app = FastAPI(title="Hermes Autonomous AI Research Assistant API")
 
-# Configure CORS
+# Configure CORS dynamically from environment
+raw_origins = os.environ.get("ALLOWED_ORIGINS", "*")
+origins = [o.strip() for o in raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict to React frontend origin
+    allow_origins=origins if origins else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
