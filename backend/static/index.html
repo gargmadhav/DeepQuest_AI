@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hermes AI Autonomous Research & Action Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/index.css">
+  <style>
+    .action-icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: all 0.15s ease;
+      font-size: 0.85rem;
+    }
+    .action-icon-btn:hover {
+      color: var(--text-primary);
+      background-color: var(--bg-tertiary);
+    }
+    .action-icon-btn.danger:hover {
+      color: var(--accent-red);
+      background-color: rgba(239, 68, 68, 0.15);
+    }
+    .report-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-secondary-action {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-secondary-action:hover {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+    .btn-danger-action {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--accent-red);
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-danger-action:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-wrapper">
+          <div class="logo-icon">H</div>
+          <span class="logo-text">Hermes Research</span>
+        </div>
+        
+        <button class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle Theme">
+          <span id="theme-toggle-icon">☀️</span>
+        </button>
+      </div>
+      
+      <button class="new-task-btn" id="new-task-btn">
+        <span>+</span> New Research Goal
+      </button>
+
+      <div class="history-section-title">History Folders</div>
+
+      <div class="folders-container" id="folders-accordion-container">
+        <!-- Populated dynamically -->
+      </div>
+    </aside>
+
+    <!-- ================= MAIN CONTENT AREA ================= -->
+    <main class="main-panel">
+      
+      <!-- Top Navigation Bar -->
+      <header class="navbar">
+        <div class="nav-tabs">
+          <button class="nav-tab active" id="tab-home">Workspace Chat</button>
+          <button class="nav-tab" id="tab-reports" style="display: none;">Report Viewer</button>
+          <button class="nav-tab" id="tab-history">Task Index</button>
+        </div>
+        <div class="backend-badge">
+          Groq LPU Backend
+        </div>
+      </header>
+
+      <!-- View 1: Workspace Chat (Default) -->
+      <section id="view-home" class="dashboard-grid">
+        <div class="chat-pane">
+          <div class="chat-messages" id="chat-messages-box">
+            
+            <div class="hero-view" id="welcome-chat-view">
+              <div class="hero-sparkle-pill">
+                ✨ Autonomous Research Suite
+              </div>
+
+              <h1 class="hero-title">
+                Deploy an Autonomous AI Employee
+              </h1>
+
+              <p class="hero-subtitle">
+                Enter research goals, analysis requests, or writing instructions. The Hermes architecture will plan steps, research the web, summarize documents, evaluate outputs, and deliver a comprehensive markdown report.
+              </p>
+
+              <div class="prompt-chips-container">
+                <button class="prompt-chip">Research next generation AI agent architectures</button>
+                <button class="prompt-chip">Analyze Groq LPU inference vs standard GPU performance</button>
+                <button class="prompt-chip">Compare Python web frameworks: FastAPI, Flask, and Django</button>
+                <button class="prompt-chip">Research vector databases: ChromaDB vs FAISS vs Pinecone</button>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="chat-input-container">
+            <form id="chat-input-form" class="input-wrapper">
+              <input
+                type="text"
+                id="task-text-input"
+                placeholder="Enter research task (e.g. Research Groq architecture metrics...)"
+                class="chat-input"
+                required
+              >
+              <button type="submit" class="send-btn" id="send-button">🚀</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="agent-status-panel">
+          <div class="panel-header">
+            <span>Execution Board</span>
+            <div class="live-badge" id="execution-live-badge" style="display: none;">
+              <span class="live-dot"></span> LIVE
+            </div>
+          </div>
+
+          <div class="status-scroll">
+            <div class="plan-section" id="plan-steps-section" style="display: none;">
+              <div class="section-title">Execution Steps</div>
+              <div class="steps-list" id="steps-card-list"></div>
+            </div>
+
+            <div class="log-section">
+              <div class="section-title">Console Output</div>
+              <div class="terminal-box" id="terminal-logs-box">
+                <span style="color: var(--text-muted);">Waiting for action...</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="watermark-sparkle">✦</div>
+        </div>
+      </section>
+
+      <!-- View 2: Report Viewer -->
+      <section id="view-reports" class="dashboard-full">
+        <div class="report-container">
+          <div class="report-header">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <div class="report-title-label">Hermes Synthesized Report</div>
+                <h1 class="report-title" id="report-viewer-title">Research Title</h1>
+                <div class="report-meta">
+                  <span>Compiled by Hermes Autonomous Agent</span>
+                  <span>|</span>
+                  <span id="report-viewer-date">Date</span>
+                </div>
+              </div>
+              <div class="report-actions">
+                <button class="btn-secondary-action" id="btn-archive-active-report" title="Archive Chat">
+                  📦 Archive Chat
+                </button>
+                <button class="btn-danger-action" id="btn-delete-active-report" title="Delete Report">
+                  🗑️ Delete Report
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="markdown-body" id="report-viewer-content">
+            <!-- Rendered markdown content -->
+          </div>
+        </div>
+      </section>
+
+      <!-- View 3: Task Index (History Table) -->
+      <section id="view-history" class="dashboard-full">
+        <h1 style="font-family: var(--font-title); margin-bottom: 24px;">Task Execution History</h1>
+        <div id="no-history-alert" style="color: var(--text-secondary); display: none;">No tasks found in database.</div>
+        <div id="history-table-container" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border-color); background-color: rgba(255,255,255,0.02); text-align: left;">
+                <th style="padding: 16px;">Goal</th>
+                <th style="padding: 16px;">Status</th>
+                <th style="padding: 16px;">Summary</th>
+                <th style="padding: 16px;">Created At</th>
+                <th style="padding: 16px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // State management
+    let currentView = 'home';
+    let historyList = [];
+    let activeTask = null;
+    let isExecuting = false;
+    let socket = null;
+    let isDarkMode = true;
+
+    let expandedFolders = {
+      'CYBERSECURITY WORKFLOWS': false,
+      'OCR RESEARCH': false,
+      'SYSTEM ARCHITECTURE': true,
+      'ARCHIVED TASKS': false
+    };
+
+    // DOM Elements
+    const tabHome = document.getElementById('tab-home');
+    const tabReports = document.getElementById('tab-reports');
+    const tabHistory = document.getElementById('tab-history');
+
+    const viewHome = document.getElementById('view-home');
+    const viewReports = document.getElementById('view-reports');
+    const viewHistory = document.getElementById('view-history');
+
+    const foldersContainer = document.getElementById('folders-accordion-container');
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    const themeToggleIcon = document.getElementById('theme-toggle-icon');
+
+    const newTaskBtn = document.getElementById('new-task-btn');
+    const chatForm = document.getElementById('chat-input-form');
+    const taskInput = document.getElementById('task-text-input');
+    const sendBtn = document.getElementById('send-button');
+    const chatMessagesBox = document.getElementById('chat-messages-box');
+    const welcomeChatView = document.getElementById('welcome-chat-view');
+
+    const liveBadge = document.getElementById('execution-live-badge');
+    const planStepsSection = document.getElementById('plan-steps-section');
+    const stepsCardList = document.getElementById('steps-card-list');
+    const terminalLogsBox = document.getElementById('terminal-logs-box');
+
+    const reportTitle = document.getElementById('report-viewer-title');
+    const reportDate = document.getElementById('report-viewer-date');
+    const reportContent = document.getElementById('report-viewer-content');
+
+    const btnArchiveReport = document.getElementById('btn-archive-active-report');
+    const btnDeleteReport = document.getElementById('btn-delete-active-report');
+
+    const historyTableBody = document.getElementById('history-table-body');
+    const noHistoryAlert = document.getElementById('no-history-alert');
+    const historyTableContainer = document.getElementById('history-table-container');
+
+    // Theme Switcher Logic
+    themeToggleBtn.addEventListener('click', () => {
+      isDarkMode = !isDarkMode;
+      document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+      themeToggleIcon.textContent = isDarkMode ? '☀️' : '🌙';
+    });
+
+    function setView(view) {
+      currentView = view;
+      tabHome.classList.toggle('active', view === 'home');
+      tabReports.classList.toggle('active-purple', view === 'reports');
+      tabHistory.classList.toggle('active', view === 'history');
+
+      viewHome.style.display = view === 'home' ? 'grid' : 'none';
+      viewReports.style.display = view === 'reports' ? 'block' : 'none';
+      viewHistory.style.display = view === 'history' ? 'block' : 'none';
+
+      if (view === 'history') {
+        renderHistoryTable();
+      }
+    }
+
+    tabHome.addEventListener('click', () => setView('home'));
+    tabReports.addEventListener('click', () => setView('reports'));
+    tabHistory.addEventListener('click', () => setView('history'));
+
+    newTaskBtn.addEventListener('click', () => {
+      activeTask = null;
+      tabReports.style.display = 'none';
+      if (!isExecuting) {
+        welcomeChatView.style.display = 'flex';
+        const bubbles = chatMessagesBox.querySelectorAll('.message-bubble');
+        bubbles.forEach(b => b.remove());
+        planStepsSection.style.display = 'none';
+        stepsCardList.innerHTML = '';
+        terminalLogsBox.innerHTML = '<span style="color: var(--text-muted);">Waiting for action...</span>';
+      }
+      setView('home');
+    });
+
+    document.querySelectorAll('.prompt-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const query = chip.textContent.trim();
+        taskInput.value = query;
+        startTask(query);
+      });
+    });
+
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const goal = taskInput.value.trim();
+      if (!goal || isExecuting) return;
+      taskInput.value = '';
+      startTask(goal);
+    });
+
+    function startTask(goal) {
+      isExecuting = true;
+      setView('home');
+      welcomeChatView.style.display = 'none';
+      liveBadge.style.display = 'flex';
+      planStepsSection.style.display = 'block';
+      stepsCardList.innerHTML = '<div style="font-size: 0.85rem; color: var(--text-muted);">Generating plan...</div>';
+      terminalLogsBox.innerHTML = '';
+      sendBtn.disabled = true;
+      taskInput.disabled = true;
+
+      const userBubble = document.createElement('div');
+      userBubble.className = 'message-bubble user';
+      userBubble.innerHTML = `
+        <div class="avatar">U</div>
+        <div class="message-content"><strong>Goal:</strong> ${goal}</div>
+      `;
+      chatMessagesBox.appendChild(userBubble);
+
+      const assistantBubble = document.createElement('div');
+      assistantBubble.className = 'message-bubble';
+      assistantBubble.id = 'hermes-active-bubble';
+      assistantBubble.innerHTML = `
+        <div class="avatar assistant">H</div>
+        <div class="message-content" id="hermes-bubble-content">
+          <span style="color: var(--accent-cyan); font-weight: bold;">Hermes is actively processing...</span>
+          <p style="margin-top: 8px; font-size: 0.9rem; color: var(--text-secondary);">
+            Current Status: <span class="status-badge planning" id="hermes-status-badge">Planning</span>
+          </p>
+          <p style="margin-top: 4px; font-size: 0.85rem;">Watch progress in the right status panel.</p>
+        </div>
+      `;
+      chatMessagesBox.appendChild(assistantBubble);
+      chatMessagesBox.scrollTop = chatMessagesBox.scrollHeight;
+
+      addTerminalLog('sys', 'System: Opening WebSocket connection to Hermes orchestrator...');
+
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/ws/chat`;
+      socket = new WebSocket(wsUrl);
+
+      socket.onopen = () => {
+        socket.send(JSON.stringify({ goal }));
+        addTerminalLog('sys', 'System: Handshake complete. Running LangGraph reasoning cycle...');
+      };
+
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          handleWSMessage(data);
+        } catch (e) {
+          console.error("Error parsing WS message:", e);
+        }
+      };
+
+      socket.onerror = (e) => {
+        console.error("WS error:", e);
+        addTerminalLog('err', 'System Error: WebSocket connection error.');
+      };
+
+      socket.onclose = () => {
+        isExecuting = false;
+        liveBadge.style.display = 'none';
+        sendBtn.disabled = false;
+        taskInput.disabled = false;
+        fetchHistoryList();
+      };
+    }
+
+    function handleWSMessage(data) {
+      switch (data.type) {
+        case 'status':
+          const statusBadge = document.getElementById('hermes-status-badge');
+          if (statusBadge) {
+            statusBadge.className = `status-badge ${data.status.toLowerCase()}`;
+            statusBadge.textContent = data.status;
+          }
+          if (data.summary) {
+            addTerminalLog('sys', `[Status] ${data.status}: ${data.summary}`);
+          }
+          if (data.steps) {
+            renderPlanSteps(data.steps);
+          }
+          break;
+          
+        case 'log':
+          const msg = data.message;
+          const stepMatch = msg.match(/\[Plan Step (\d+)\]/);
+          if (stepMatch) {
+            const stepId = parseInt(stepMatch[1], 10);
+            highlightStep(stepId);
+          }
+
+          let cat = 'info';
+          if (msg.includes('[Action]')) cat = 'action';
+          else if (msg.includes('[LangGraph Node:') || msg.includes('[Reflection System]') || msg.includes('[System]')) cat = 'sys';
+          else if (msg.includes('[File Writer Result]') || msg.includes('approved')) cat = 'success';
+          else if (msg.includes('Warning')) cat = 'warn';
+          else if (msg.includes('[Error]') || msg.includes('Failed')) cat = 'err';
+
+          addTerminalLog(cat, msg);
+          break;
+
+        case 'result':
+          const payload = data.payload;
+          if (payload.steps_executed) {
+            renderStepsOnBoard(payload.steps_executed);
+          }
+
+          const activeBubbleContent = document.getElementById('hermes-bubble-content');
+          if (activeBubbleContent) {
+            activeBubbleContent.innerHTML = `
+              <strong style="color: var(--accent-green);">Task Completed!</strong>
+              <p style="margin-top: 6px;">
+                A complete research report has been indexed. Switch to the <strong>Report Viewer</strong> tab to review it.
+              </p>
+            `;
+          }
+
+          activeTask = {
+            id: data.task_id || Date.now(),
+            goal: document.querySelector('.message-bubble.user strong').nextSibling.nodeValue.trim(),
+            final_report: payload.final_report,
+            created_at: new Date().toISOString()
+          };
+
+          renderReportContent(activeTask);
+          tabReports.style.display = 'block';
+          setView('reports');
+          break;
+
+        case 'error':
+          const activeBubbleContentErr = document.getElementById('hermes-bubble-content');
+          if (activeBubbleContentErr) {
+            activeBubbleContentErr.innerHTML = `
+              <strong style="color: var(--accent-red);">Task Failed</strong>
+              <p style="margin-top: 6px; color: var(--accent-red);">${data.message}</p>
+            `;
+          }
+          addTerminalLog('err', `[Error] ${data.message}`);
+          break;
+      }
+    }
+
+    function addTerminalLog(category, message) {
+      const line = document.createElement('div');
+      line.className = `terminal-line ${category}`;
+      line.textContent = message;
+      terminalLogsBox.appendChild(line);
+      terminalLogsBox.scrollTop = terminalLogsBox.scrollHeight;
+    }
+
+    function renderStepsOnBoard(steps) {
+      stepsCardList.innerHTML = '';
+      steps.forEach(step => {
+        const card = document.createElement('div');
+        card.className = `step-card completed`;
+        card.id = `step-card-${step.id}`;
+        card.innerHTML = `
+          <div class="step-number">${step.id}</div>
+          <div class="step-details">
+            <div class="step-tool">${step.tool}</div>
+            <div class="step-arg">${step.argument}</div>
+          </div>
+        `;
+        stepsCardList.appendChild(card);
+      });
+    }
+
+    function renderPlanSteps(steps) {
+      stepsCardList.innerHTML = '';
+      steps.forEach(step => {
+        const card = document.createElement('div');
+        card.className = `step-card`;
+        card.id = `step-card-${step.id}`;
+        card.innerHTML = `
+          <div class="step-number">${step.id}</div>
+          <div class="step-details">
+            <div class="step-tool">${step.tool}</div>
+            <div class="step-arg">${step.argument}</div>
+          </div>
+        `;
+        stepsCardList.appendChild(card);
+      });
+    }
+
+    function highlightStep(stepId) {
+      document.querySelectorAll('.step-card').forEach(card => {
+        const cardId = parseInt(card.id.replace('step-card-', ''), 10);
+        card.classList.remove('active');
+        if (cardId < stepId) {
+          card.classList.add('completed');
+        } else if (cardId === stepId) {
+          card.classList.add('active');
+          card.classList.remove('completed');
+        }
+      });
+    }
+
+    function parseMarkdown(md) {
+      if (!md) return "";
+      let html = md;
+      html = html.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      html = html.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+      html = html.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
+      html = html.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
+      html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+      html = html.replace(/`(.*?)`/g, '<code>$1</code>');
+      html = html.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
+      html = html.replace(/^\- (.*?)$/gm, '<li>$1</li>');
+      
+      html = html.split('\n\n').map(p => {
+        const trimmed = p.trim();
+        if (trimmed.startsWith('<h') || trimmed.startsWith('<pre') || trimmed.startsWith('<blockquote') || trimmed.startsWith('<li>')) {
+          return trimmed;
+        }
+        return `<p>${trimmed.replace(/\n/g, '<br>')}</p>`;
+      }).join('\n');
+      
+      return html;
+    }
+
+    function renderReportContent(task) {
+      reportTitle.textContent = task.goal;
+      reportDate.textContent = task.created_at ? new Date(task.created_at).toLocaleString() : '';
+      reportContent.innerHTML = parseMarkdown(task.final_report);
+    }
+
+    // Archive and Delete REST actions
+    async function archiveTask(id, event) {
+      if (event) event.stopPropagation();
+      if (!confirm("Are you sure you want to archive this chat?")) return;
+      try {
+        const res = await fetch(`/archive/${id}`, { method: 'POST' });
+        if (res.ok) {
+          fetchHistoryList();
+          if (activeTask && activeTask.id === id) {
+            activeTask.status = "Archived";
+          }
+        }
+      } catch (e) {
+        console.error("Error archiving task:", e);
+      }
+    }
+
+    async function deleteReport(id, event) {
+      if (event) event.stopPropagation();
+      if (!confirm("Are you sure you want to delete this report? This cannot be undone.")) return;
+      try {
+        const res = await fetch(`/report/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          if (activeTask && activeTask.id === id) {
+            activeTask = null;
+            tabReports.style.display = 'none';
+            setView('home');
+          }
+          fetchHistoryList();
+        }
+      } catch (e) {
+        console.error("Error deleting report:", e);
+      }
+    }
+
+    btnArchiveReport.addEventListener('click', () => {
+      if (activeTask && activeTask.id) {
+        archiveTask(activeTask.id);
+      }
+    });
+
+    btnDeleteReport.addEventListener('click', () => {
+      if (activeTask && activeTask.id) {
+        deleteReport(activeTask.id);
+      }
+    });
+
+    async function fetchHistoryList() {
+      try {
+        const res = await fetch('/history');
+        if (res.ok) {
+          historyList = await res.json();
+          renderFoldersAccordion();
+          renderHistoryTable();
+        }
+      } catch (e) {
+        console.error("Error loading histories:", e);
+      }
+    }
+
+    function renderFoldersAccordion() {
+      foldersContainer.innerHTML = '';
+      
+      const folderCategories = [
+        { name: 'CYBERSECURITY WORKFLOWS', filter: (t) => t.status !== 'Archived' && (t.goal.toLowerCase().includes('cyber') || t.goal.toLowerCase().includes('security')) },
+        { name: 'OCR RESEARCH', filter: (t) => t.status !== 'Archived' && (t.goal.toLowerCase().includes('ocr') || t.goal.toLowerCase().includes('vision')) },
+        { name: 'SYSTEM ARCHITECTURE', filter: (t) => t.status !== 'Archived' && !t.goal.toLowerCase().includes('cyber') && !t.goal.toLowerCase().includes('ocr') },
+        { name: 'ARCHIVED TASKS', filter: (t) => t.status === 'Archived' }
+      ];
+
+      folderCategories.forEach(cat => {
+        const group = document.createElement('div');
+        group.className = 'folder-group';
+
+        const isExpanded = expandedFolders[cat.name] !== false;
+        const matchingItems = historyList.filter(cat.filter);
+
+        group.innerHTML = `
+          <button class="folder-header" onclick="toggleFolder('${cat.name}')">
+            <div class="folder-header-left">
+              <span class="folder-arrow ${isExpanded ? 'expanded' : ''}">▼</span>
+              <span class="folder-icon">📁</span>
+              <span>${cat.name}</span>
+            </div>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">${matchingItems.length}</span>
+          </button>
+        `;
+
+        if (isExpanded) {
+          const itemsDiv = document.createElement('div');
+          itemsDiv.className = 'folder-items';
+          
+          if (matchingItems.length === 0) {
+            itemsDiv.innerHTML = `<div style="padding: 6px 10px; font-size: 0.75rem; color: var(--text-muted);">No items</div>`;
+          } else {
+            matchingItems.forEach(item => {
+              const itemDiv = document.createElement('div');
+              itemDiv.className = `folder-item ${activeTask?.id === item.id ? 'active' : ''}`;
+              itemDiv.onclick = () => selectHistoryItem(item.id);
+              itemDiv.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div class="folder-item-title">${item.goal}</div>
+                  <div style="display: flex; gap: 2px;">
+                    <button class="action-icon-btn" onclick="archiveTask(${item.id}, event)" title="Archive Chat">📦</button>
+                    <button class="action-icon-btn danger" onclick="deleteReport(${item.id}, event)" title="Delete Report">🗑️</button>
+                  </div>
+                </div>
+                <div class="folder-item-meta">
+                  <span class="status-badge ${item.status.toLowerCase()}">${item.status}</span>
+                  <span style="color: var(--text-muted);">${item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</span>
+                </div>
+              `;
+              itemsDiv.appendChild(itemDiv);
+            });
+          }
+          group.appendChild(itemsDiv);
+        }
+        foldersContainer.appendChild(group);
+      });
+    }
+
+    function toggleFolder(folderName) {
+      expandedFolders[folderName] = !expandedFolders[folderName];
+      renderFoldersAccordion();
+    }
+
+    function renderHistoryTable() {
+      historyTableBody.innerHTML = '';
+      if (historyList.length === 0) {
+        noHistoryAlert.style.display = 'block';
+        historyTableContainer.style.display = 'none';
+        return;
+      }
+
+      noHistoryAlert.style.display = 'none';
+      historyTableContainer.style.display = 'block';
+
+      historyList.forEach(t => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid var(--border-color)';
+        tr.innerHTML = `
+          <td style="padding: 16px; font-weight: 500;">${t.goal}</td>
+          <td style="padding: 16px;"><span class="status-badge ${t.status.toLowerCase()}">${t.status}</span></td>
+          <td style="padding: 16px; color: var(--text-secondary);">${t.summary || ''}</td>
+          <td style="padding: 16px; color: var(--text-muted);">${t.created_at ? new Date(t.created_at).toLocaleString() : ''}</td>
+          <td style="padding: 16px;">
+            <div style="display: flex; gap: 6px;">
+              <button class="btn-secondary-action" onclick="selectHistoryItem(${t.id})">View Report</button>
+              <button class="action-icon-btn" onclick="archiveTask(${t.id}, event)" title="Archive Chat">📦</button>
+              <button class="action-icon-btn danger" onclick="deleteReport(${t.id}, event)" title="Delete Report">🗑️</button>
+            </div>
+          </td>
+        `;
+        historyTableBody.appendChild(tr);
+      });
+    }
+
+    async function selectHistoryItem(id) {
+      try {
+        const res = await fetch(`/report/${id}`);
+        if (res.ok) {
+          activeTask = await res.json();
+          renderReportContent(activeTask);
+          tabReports.style.display = 'block';
+          setView('reports');
+          renderFoldersAccordion();
+        }
+      } catch (e) {
+        console.error("Error loading task:", e);
+      }
+    }
+
+    fetchHistoryList();
+  </script>
+</body>
+</html>
