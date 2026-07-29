@@ -90,11 +90,11 @@ GROQ_API_KEY=gsk_YourActualGroqApiKeyHere
 Start the FastAPI server (which hosts both the REST/WebSocket API and the web UI):
 
 ```bash
-python -m uvicorn backend.main:app --port 8000 --reload
+python -m uvicorn backend.main:app --port 8001 --reload
 ```
 
 Open your browser and navigate to:  
-👉 **`http://localhost:8000/`**
+👉 **`http://localhost:8001/`** (Backend + Bundled UI) or **`http://localhost:5172/`** (React Frontend)
 
 ---
 
