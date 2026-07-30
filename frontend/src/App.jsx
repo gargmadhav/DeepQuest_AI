@@ -17,12 +17,23 @@ import {
 } from 'lucide-react';
 
 const getApiUrl = () => {
-  if (import.meta.env.VITE_API_BASE_URL) return import.meta.env.VITE_API_BASE_URL;
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl) {
+    return envUrl.replace(/\/$/, '');
+  }
   return window.location.origin;
 };
 
 const getWsUrl = () => {
-  if (import.meta.env.VITE_WS_BASE_URL) return import.meta.env.VITE_WS_BASE_URL;
+  let envWsUrl = import.meta.env.VITE_WS_BASE_URL;
+  if (envWsUrl) {
+    if (envWsUrl.startsWith('http://')) {
+      envWsUrl = envWsUrl.replace('http://', 'ws://');
+    } else if (envWsUrl.startsWith('https://')) {
+      envWsUrl = envWsUrl.replace('https://', 'wss://');
+    }
+    return envWsUrl.endsWith('/ws/chat') ? envWsUrl : `${envWsUrl.replace(/\/$/, '')}/ws/chat`;
+  }
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   return `${protocol}//${window.location.host}/ws/chat`;
 };
@@ -127,7 +138,7 @@ export default function App() {
       socketRef.current.close();
     }
 
-    const ws = new WebSocket(WS_URL);
+    const ws = new WebSocket(getWsUrl());
     socketRef.current = ws;
 
     ws.onopen = () => {
